@@ -1,0 +1,11 @@
+website: http://ob-mc.net
+name: OBGameplayAdjuster
+author: Fahrenheit451
+version: 1.0
+api-version: 1.16 
+main: net.obmc.OBGameplayAdjuster.OBGameplayAdjuster
+description: Enforces certain gameplay rules - deop on join, force survival mode etc
+commands:
+  gpa:
+    description: OBGameplayAdjuster command.
+    usage: Type /gpa for a list of commands
