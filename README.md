@@ -1,10 +1,10 @@
 # OBGameplayAdjuster
-Minecraft bukkit/spigot plugin to enforce various gameplay settings.
+Minecraft bukkit/spigot plugin to enforce various gameplay settings.<br>
 
 Use the /gpa to get the usage message
 
-Useful for PVP servers where you want to enforce particular rules such as auto deop of op'd players.
+Useful for PVP servers where you want to enforce particular rules such as auto deop of op'd players.<br>
+This was a requested feature for some of our PlayerServers users who want to PVP and don't trust each other :-)<br>
+More to come!
 
-The compiled jar file is also in the target folder of the repo so can be downloaded directly from there. This is also the complete Eclipse project so it should import into Eclipse (I was using Oxygen.3.a Release 4.7.3a).
-
-Compiled for 1.17 and Java 16, but should work with older versions (up to a point).
+Compiled for 1.18 and Java 17, but should work with older versions (up to a point).
