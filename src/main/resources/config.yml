@@ -1,5 +1,15 @@
 # Config file for OBGameplayAdjuster
 #
 
-DeOp: true
-ForceSurvival: true
+# this will deop anyone joining with op or being granted op
+# Use this with caution!
+deop: false
+
+# force players into survival mode
+forcesurvival: false
+
+# damage related settings
+# see the following link for all damage causes
+# https://hub.spigotmc.org/javadocs/spigot/org/bukkit/event/entity/EntityDamageEvent.DamageCause.html
+alldamage: false
+damage: []

@@ -1,11 +1,11 @@
 package net.obmc.OBGameplayAdjuster;
 
-import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.configuration.Configuration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
@@ -18,14 +18,21 @@ public class OBGameplayAdjuster extends JavaPlugin
 	static Logger log = Logger.getLogger("Minecraft");
 	
 	public static OBGameplayAdjuster instance;
-	
-    private PlayerJoinListener listen;
-	public ConfigManager mlc;
-	
-	private static Boolean doDeop;
+    private PlayerListener playerlistener;
+	public static DamageManager damagemgr = null;
     
+	private Boolean deop = false;;
+	private Boolean forcesurvival = false;
+	private Boolean stopalldamage = false;
+
+	private static String plugin = "OBGameplayAdjuster";
+	private static String pluginprefix = "[" + plugin + "]";
+	private static String chatmsgprefix = ChatColor.AQUA + "" + ChatColor.BOLD + plugin + ChatColor.DARK_GRAY + ChatColor.BOLD + " » " + ChatColor.LIGHT_PURPLE + "";
+	private static String logmsgprefix = pluginprefix + " » ";
+
     public OBGameplayAdjuster() {
     	instance = this;
+    	damagemgr = new DamageManager();
     }
     
     // make our (public) main class methods and variables available to other classes
@@ -35,12 +42,16 @@ public class OBGameplayAdjuster extends JavaPlugin
     
     // enable the plugin
     public void onEnable() {
-        this.listen = new PlayerJoinListener();
-        this.getServer().getPluginManager().registerEvents((Listener)this.listen, (Plugin)this);
-        this.getCommand("gpa").setExecutor(new PlayerCommandListener());
-		if (!manageConfigs()) {
-			return;
-		}
+    	
+		/**
+		 * Initialize Stuff
+		 */
+		initializeStuff();
+
+		/**
+		 * Register stuff
+		 */
+		registerStuff();
 		
 		// enable the repeating task
 		BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
@@ -50,8 +61,8 @@ public class OBGameplayAdjuster extends JavaPlugin
             	
         		// check if anyone is op and deop according to the rule
             	for (Player player : Bukkit.getOnlinePlayers()) {
-            		if (player.isOp() && doDeop) {
-                    	log.log(Level.INFO, "[OBGameplayAdjuster] - deop'ing " + player.getName());
+            		if (player.isOp() && deop) {
+                    	log.log(Level.INFO, logmsgprefix + "Deop'ing " + player.getName());
                     	player.sendMessage(ChatColor.LIGHT_PURPLE + "OBGameplayAdjuster - " + ChatColor.RED + "You were deop'd per the gameplay setting.");
                     	player.setOp(false);
                     }
@@ -60,55 +71,75 @@ public class OBGameplayAdjuster extends JavaPlugin
         }, 0L, 100L);		
     }
     
-    // disable the plugin
+    // save config disable the plugin
     public void onDisable() {
+    	this.getConfig().set("damage", OBGameplayAdjuster.getDamageManager().listConfig());
     	saveConfig();
     }
     
-    // return the player join listener if needed 
-    public PlayerJoinListener getListen() {
-        return this.listen;
-    }
+	/**
+	 * Initialize Stuff
+	 */
+	public void initializeStuff() {
+		this.saveDefaultConfig();
+		Configuration config = this.getConfig();
 
-    // save current configuration out to file
-    public void saveConfig() {
-    	log.log(Level.INFO, "[OBGameplayAdjuster] Saving configuration");
-    	mlc.getConfig().set("DeOp", doDeop);
-    	mlc.save();
-    }
-    
-    // load configuration from file
-	public void loadConfig() {
-		if (new File("plugins/OBGameplayAdjuster/config.yml").exists()) {
-			//log.log(Level.INFO, "[OBMetaProducer] config.yml successfully loaded.");
-		} else {
-			saveDefaultConfig();
-			log.log(Level.INFO, "[OBGameplayAdjuster] New config.yml has been created.");
-		}
+		this.deop = config.getBoolean("deop");
+		this.forcesurvival = config.getBoolean("forcesurvival");
+		this.stopalldamage = config.getBoolean("stopalldamage");
+		OBGameplayAdjuster.getDamageManager().setFromConfig();
+		
+		log.log(Level.INFO, "[OBGameplayAdjuster] Loaded configuration.");
 	}
 	
-	// load configuration or create a default configuration
-	public boolean manageConfigs() {
-		loadConfig();
-		try {
-			mlc = new ConfigManager(this);
-			doDeop = mlc.getConfig().getBoolean("DeOp");
-		} catch (Exception e) {
-			log.log(Level.WARNING, "[OBGameplayAdjuster] Error occurred while loading config.");
-			e.printStackTrace();
-			this.getServer().getPluginManager().disablePlugin(this);
-			return false;
-		}
-		log.log(Level.INFO, "[OBGameplayAdjuster] Loaded configuration");
-		log.log(Level.INFO, "[OBGameplayAdjuster]     DeOp on join is set to " + doDeop.toString());
-		return true;
+	/**
+	 * Register things
+	 */
+	public void registerStuff() {
+        // event listener for player events
+		this.playerlistener = new PlayerListener();
+        this.getServer().getPluginManager().registerEvents((Listener)this.playerlistener, (Plugin)this);
+        // event listener for commands
+        this.getCommand("gpa").setExecutor(new CommandListener());
+
 	}
 
-	public static boolean getDoDeop() {
-		return doDeop;
+    /**
+     * Routine getters and setters
+     */
+ 	public boolean getDeop() {
+		return this.deop;
 	}
-	public static void setDoDeop(Boolean dodeop) {
-		doDeop = dodeop;
+	public void setDeop(Boolean mode) {
+		this.deop = mode;
 	}
-
+ 	public boolean getForceSurvival() {
+		return this.forcesurvival;
+	}
+	public void setForceSurvival(Boolean mode) {
+		this.forcesurvival = mode;
+	}
+ 	public boolean getStopAllDamage() {
+		return this.stopalldamage;
+	}
+	public void setStopAllDamage(Boolean mode) {
+		this.stopalldamage = mode;
+	}
+	public static DamageManager getDamageManager() {
+		return damagemgr;
+	}
+	
+	// consistent messaging
+	public static String getPluginName() {
+		return plugin;
+	}
+	public static String getPluginPrefix() {
+		return pluginprefix;
+	}
+	public String getChatMsgPrefix() {
+		return chatmsgprefix;
+	}
+	public String getLogMsgPrefix() {
+		return logmsgprefix;
+	}
 }
