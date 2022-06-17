@@ -14,4 +14,4 @@ damage - toggle specific damage to all players on and off. See this URL for spec
 [Spigot Damage Causes](https://hub.spigotmc.org/javadocs/spigot/org/bukkit/event/entity/EntityDamageEvent.DamageCause.html)<br>
 eg. /gpa damage FALL - would toggle fall damage for all players in all worlds<br>
 
-Compiled for 1.18 and Java 17, but should work with older versions (up to a point).
+Compiled for 1.19 and Java 17.
