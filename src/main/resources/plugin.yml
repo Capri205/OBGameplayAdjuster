@@ -2,7 +2,7 @@ website: http://ob-mc.net
 name: OBGameplayAdjuster
 author: Fahrenheit451
 version: 1.1
-api-version: 1.19
+api-version: 1.20
 main: net.obmc.OBGameplayAdjuster.OBGameplayAdjuster
 description: Enforces certain gameplay rules - deop on join, force survival mode etc
 commands:
